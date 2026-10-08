@@ -20,6 +20,9 @@ AllowAgentForwarding no
 PermitTunnel no
 PermitUserEnvironment no
 LogLevel VERBOSE
+{% if linux_hardening_ssh_banner_enabled | bool %}
+Banner /etc/issue.net
+{% endif %}
 {% if linux_hardening_ssh_allow_groups | length > 0 %}
 AllowGroups {{ linux_hardening_ssh_allow_groups | join(' ') }}
 {% endif %}

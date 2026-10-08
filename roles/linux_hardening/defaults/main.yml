@@ -6,6 +6,8 @@ linux_hardening_fail2ban_enabled: true
 linux_hardening_unattended_upgrades_enabled: true
 linux_hardening_sysctl_enabled: true
 linux_hardening_auditd_enabled: true
+linux_hardening_motd_enabled: true                   # /etc/motd shown after login
+linux_hardening_ssh_banner_enabled: true             # /etc/issue.net + sshd Banner (pre-login notice)
 
 # Containers (e.g. Molecule) cannot load kernel settings, firewall rules or
 # audit rules. Detected automatically; override if needed.
@@ -90,3 +92,13 @@ linux_hardening_sysctl_extra: {}                     # merged over the defaults 
 linux_hardening_auditd_rules_file: /etc/audit/rules.d/90-hardening.rules
 # Make rules immutable until reboot (-e 2). Strong, but changes then need a reboot.
 linux_hardening_auditd_immutable: false
+
+# --- Login banners -----------------------------------------------------------
+# Shown after login (/etc/motd) and, via sshd's Banner, before authentication
+# (/etc/issue.net). The pre-login notice deliberately contains no host or OS details.
+linux_hardening_legal_notice_title: AUTHORIZED USE ONLY
+linux_hardening_legal_notice: >-
+  This system is for the use of authorized users only. All activity may be
+  monitored and recorded. Unauthorized access or use is prohibited and may
+  result in disciplinary action and/or civil and criminal penalties. By
+  continuing, you acknowledge and consent to these terms.

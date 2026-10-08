@@ -3,6 +3,25 @@
 [![CI](https://github.com/int3erlud3/ansible-linux-hardening/actions/workflows/ci.yml/badge.svg)](https://github.com/int3erlud3/ansible-linux-hardening/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+```text
+                _ _    _         _ _
+   __ _ _ _  __(_) |__| |___ ___| (_)_ _ _  ___ __
+  / _` | ' \(_-< | '_ \ / -_)___| | | ' \ || \ \ /
+  \__,_|_||_/__/_|_.__/_\___|   |_|_|_||_\_,_/_\_\
+   _                _          _
+  | |_  __ _ _ _ __| |___ _ _ (_)_ _  __ _
+  | ' \/ _` | '_/ _` / -_) ' \| | ' \/ _` |
+  |_||_\__,_|_| \__,_\___|_||_|_|_||_\__, |
+                                     |___/
+
++====================================================================+
+|  ANSIBLE LINUX HARDENING  ::  Security Baseline Role               |
++--------------------------------------------------------------------+
+|  SSH, firewall, fail2ban, auditd & sysctl - idempotent and tested  |
+|  v1.0.0  -  Bastion Ops Toolkit  -  by int3erlud3                  |
++====================================================================+
+```
+
 An Ansible role (`linux_hardening`) and example playbook that apply a pragmatic
 security baseline to **Debian 12/13 and Ubuntu 22.04/24.04** servers. Every part can
 be toggled and tuned through variables; the role is idempotent and tested with
@@ -18,6 +37,7 @@ Molecule.
 | **Updates** | `unattended-upgrades` for security updates, optional automatic reboot and mail report |
 | **Kernel** | `sysctl` hardening (rp_filter, no redirects/source routing, syncookies, kptr/dmesg restrictions, ptrace scope, protected links, …) |
 | **Auditing** | `auditd` with rules for identity files, sudoers, SSH config, time changes, kernel modules, privileged commands; optional immutable mode |
+| **Login banners** | Hardened-system `/etc/motd` with legal notice; authorized-use-only `/etc/issue.net` as SSH pre-login `Banner` (no host/OS details) |
 
 ## Requirements
 
@@ -71,6 +91,23 @@ for all options (validated by `meta/argument_specs.yml`).
 | `linux_hardening_unattended_upgrades_reboot` | `false` | Automatic reboot after updates |
 | `linux_hardening_sysctl_extra` | `{}` | Additional/overriding sysctl keys |
 | `linux_hardening_auditd_immutable` | `false` | Lock audit rules until reboot |
+| `linux_hardening_motd_enabled` | `true` | Deploy the hardened-system `/etc/motd` |
+| `linux_hardening_ssh_banner_enabled` | `true` | Deploy `/etc/issue.net` and set it as sshd `Banner` |
+| `linux_hardening_legal_notice_title` / `_notice` | `AUTHORIZED USE ONLY` / see defaults | Legal notice text |
+
+## Login banners
+
+Part of the **Bastion Ops Toolkit**. With the defaults the role deploys:
+
+- **`/etc/motd`** (after login): the banner above, the host name, *"This system is
+  hardened and monitored by ansible-linux-hardening"* and the authorized-use-only
+  legal notice.
+- **`/etc/issue.net`** as sshd `Banner` (before authentication): only the legal
+  notice – deliberately **no host name, OS or version details** for unauthenticated
+  clients.
+
+Both are plain templates (idempotent, verified by Molecule) and can be switched off
+with `linux_hardening_motd_enabled: false` / `linux_hardening_ssh_banner_enabled: false`.
 
 ## Testing
 

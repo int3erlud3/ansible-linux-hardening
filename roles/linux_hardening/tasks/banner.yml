@@ -1,0 +1,18 @@
+---
+- name: Deploy message of the day (/etc/motd)
+  ansible.builtin.template:
+    src: motd.j2
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: "0644"
+  when: linux_hardening_motd_enabled | bool
+
+- name: Deploy SSH pre-login legal notice (/etc/issue.net)
+  ansible.builtin.template:
+    src: issue.net.j2
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: "0644"
+  when: linux_hardening_ssh_banner_enabled | bool

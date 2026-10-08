@@ -11,6 +11,10 @@
     update_cache: true
     cache_valid_time: 3600
 
+- name: Login banners (MOTD and SSH legal notice)
+  ansible.builtin.import_tasks: banner.yml
+  tags: [hardening, banner]
+
 - name: SSH hardening
   ansible.builtin.import_tasks: ssh.yml
   when: linux_hardening_ssh_enabled | bool

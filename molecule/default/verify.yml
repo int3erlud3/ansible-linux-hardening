@@ -16,6 +16,7 @@
           - "'passwordauthentication no' in sshd_effective.stdout"
           - "'x11forwarding no' in sshd_effective.stdout"
           - "'maxauthtries 3' in sshd_effective.stdout"
+          - "'banner /etc/issue.net' in sshd_effective.stdout"
 
     - name: Gather package facts
       ansible.builtin.package_facts:
@@ -51,3 +52,22 @@
       loop: "{{ linux_hardening_files.results }}"
       loop_control:
         label: "{{ item.item }}"
+
+    - name: Read login banners
+      ansible.builtin.slurp:
+        src: "{{ item }}"
+      register: linux_hardening_banners
+      loop: [/etc/motd, /etc/issue.net]
+
+    - name: Assert MOTD and SSH legal notice are deployed
+      ansible.builtin.assert:
+        that:
+          - "'hardened and monitored by ansible-linux-hardening' in motd"
+          - "'AUTHORIZED USE ONLY' in motd"
+          - "'Bastion Ops Toolkit' in motd"
+          - "'AUTHORIZED USE ONLY' in issue"
+          - "'authorized users only' in issue"
+          - "inventory_hostname not in issue"  # no host details before login
+      vars:
+        motd: "{{ linux_hardening_banners.results[0].content | b64decode }}"
+        issue: "{{ linux_hardening_banners.results[1].content | b64decode }}"
