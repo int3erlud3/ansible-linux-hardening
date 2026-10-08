@@ -1,0 +1,53 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Validate effective sshd configuration
+      ansible.builtin.command: /usr/sbin/sshd -T
+      register: sshd_effective
+      changed_when: false
+
+    - name: Assert SSH hardening is effective
+      ansible.builtin.assert:
+        that:
+          - "'permitrootlogin no' in sshd_effective.stdout"
+          - "'passwordauthentication no' in sshd_effective.stdout"
+          - "'x11forwarding no' in sshd_effective.stdout"
+          - "'maxauthtries 3' in sshd_effective.stdout"
+
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+
+    - name: Assert hardening packages are installed
+      ansible.builtin.assert:
+        that: item in ansible_facts.packages
+      loop: [ufw, fail2ban, unattended-upgrades, auditd]
+
+    - name: Read sysctl drop-in
+      ansible.builtin.slurp:
+        src: /etc/sysctl.d/90-hardening.conf
+      register: sysctl_file
+
+    - name: Assert sysctl settings are persisted
+      ansible.builtin.assert:
+        that:
+          - "'net.ipv4.tcp_syncookies=1' in (sysctl_file.content | b64decode)"
+          - "'kernel.kptr_restrict=2' in (sysctl_file.content | b64decode)"
+
+    - name: Check audit rules and fail2ban jail exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: linux_hardening_files
+      loop:
+        - /etc/audit/rules.d/90-hardening.rules
+        - /etc/fail2ban/jail.local
+        - /etc/apt/apt.conf.d/20auto-upgrades
+
+    - name: Assert files exist
+      ansible.builtin.assert:
+        that: item.stat.exists
+      loop: "{{ linux_hardening_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
