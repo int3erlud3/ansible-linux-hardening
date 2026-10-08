@@ -1,6 +1,6 @@
 # ansible-linux-hardening
 
-[![CI](https://github.com/OWNER/ansible-linux-hardening/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/ansible-linux-hardening/actions/workflows/ci.yml)
+[![CI](https://github.com/int3erlud3/ansible-linux-hardening/actions/workflows/ci.yml/badge.svg)](https://github.com/int3erlud3/ansible-linux-hardening/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An Ansible role (`linux_hardening`) and example playbook that apply a pragmatic
@@ -28,7 +28,7 @@ Molecule.
 ## Usage
 
 ```bash
-git clone https://github.com/OWNER/ansible-linux-hardening.git
+git clone https://github.com/int3erlud3/ansible-linux-hardening.git
 cd ansible-linux-hardening
 ansible-galaxy collection install -r requirements.yml
 cp inventory/hosts.example.yml inventory/hosts.yml   # edit hosts and variables
