@@ -18,4 +18,4 @@ molecule:
 	molecule test
 
 scan:
-	docker run --rm -v "$(CURDIR):/repo:ro" $(GITLEAKS_IMAGE) dir /repo --redact --no-banner
+	docker run --rm -v "$(CURDIR):/repo:ro" $(GITLEAKS_IMAGE) git /repo --redact --no-banner
