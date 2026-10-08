@@ -1,0 +1,92 @@
+---
+# Feature toggles
+linux_hardening_ssh_enabled: true
+linux_hardening_firewall_enabled: true
+linux_hardening_fail2ban_enabled: true
+linux_hardening_unattended_upgrades_enabled: true
+linux_hardening_sysctl_enabled: true
+linux_hardening_auditd_enabled: true
+
+# Containers (e.g. Molecule) cannot load kernel settings, firewall rules or
+# audit rules. Detected automatically; override if needed.
+linux_hardening_in_container: >-
+  {{ ansible_facts['virtualization_type'] | default('') in ['docker', 'podman', 'container', 'lxc'] }}
+
+# --- SSH -------------------------------------------------------------------
+linux_hardening_ssh_port: 22
+linux_hardening_ssh_permit_root_login: "no"          # "no" or "prohibit-password"
+linux_hardening_ssh_password_authentication: false
+linux_hardening_ssh_allow_groups: []                 # e.g. ["ssh-users"]; empty = no restriction
+linux_hardening_ssh_max_auth_tries: 3
+linux_hardening_ssh_client_alive_interval: 300
+linux_hardening_ssh_client_alive_count_max: 2
+linux_hardening_ssh_allow_tcp_forwarding: "no"
+linux_hardening_ssh_x11_forwarding: "no"
+# Abort if password logins get disabled while the connecting user has no SSH key.
+linux_hardening_ssh_lockout_check: true
+linux_hardening_ssh_kex_algorithms:
+  - sntrup761x25519-sha512@openssh.com
+  - curve25519-sha256
+  - curve25519-sha256@libssh.org
+  - diffie-hellman-group16-sha512
+  - diffie-hellman-group18-sha512
+linux_hardening_ssh_ciphers:
+  - chacha20-poly1305@openssh.com
+  - aes256-gcm@openssh.com
+  - aes128-gcm@openssh.com
+  - aes256-ctr
+  - aes192-ctr
+  - aes128-ctr
+linux_hardening_ssh_macs:
+  - hmac-sha2-512-etm@openssh.com
+  - hmac-sha2-256-etm@openssh.com
+  - umac-128-etm@openssh.com
+
+# --- Firewall --------------------------------------------------------------
+linux_hardening_firewall_backend: ufw                # ufw | nftables
+linux_hardening_firewall_allowed_tcp_ports: []       # SSH port is always allowed
+linux_hardening_firewall_allowed_udp_ports: []
+linux_hardening_firewall_ssh_rate_limit: true
+
+# --- fail2ban --------------------------------------------------------------
+linux_hardening_fail2ban_bantime: 1h
+linux_hardening_fail2ban_findtime: 10m
+linux_hardening_fail2ban_maxretry: 5
+linux_hardening_fail2ban_ignoreip: []                # e.g. ["192.0.2.0/24"]
+
+# --- unattended-upgrades ---------------------------------------------------
+linux_hardening_unattended_upgrades_reboot: false
+linux_hardening_unattended_upgrades_reboot_time: "03:30"
+linux_hardening_unattended_upgrades_mail: ""         # empty = no mail
+linux_hardening_unattended_upgrades_remove_unused: true
+
+# --- sysctl ----------------------------------------------------------------
+linux_hardening_sysctl_file: /etc/sysctl.d/90-hardening.conf
+linux_hardening_sysctl_settings:
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv6.conf.all.accept_redirects: 0
+  net.ipv6.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv6.conf.all.accept_source_route: 0
+  net.ipv4.conf.all.log_martians: 1
+  net.ipv4.icmp_echo_ignore_broadcasts: 1
+  net.ipv4.tcp_syncookies: 1
+  kernel.kptr_restrict: 2
+  kernel.dmesg_restrict: 1
+  kernel.yama.ptrace_scope: 1
+  kernel.unprivileged_bpf_disabled: 1
+  kernel.randomize_va_space: 2
+  fs.protected_hardlinks: 1
+  fs.protected_symlinks: 1
+  fs.suid_dumpable: 0
+linux_hardening_sysctl_extra: {}                     # merged over the defaults above
+
+# --- auditd ----------------------------------------------------------------
+linux_hardening_auditd_rules_file: /etc/audit/rules.d/90-hardening.rules
+# Make rules immutable until reboot (-e 2). Strong, but changes then need a reboot.
+linux_hardening_auditd_immutable: false

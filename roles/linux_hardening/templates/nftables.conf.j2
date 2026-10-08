@@ -1,0 +1,42 @@
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+
+flush ruleset
+
+table inet filter {
+  set ssh_ratelimit_v4 {
+    type ipv4_addr
+    flags dynamic, timeout
+    timeout 1m
+  }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    ct state established,related accept
+    ct state invalid drop
+    iif "lo" accept
+    meta l4proto { icmp, ipv6-icmp } accept
+
+{% if linux_hardening_firewall_ssh_rate_limit | bool %}
+    tcp dport {{ linux_hardening_ssh_port }} ct state new add @ssh_ratelimit_v4 { ip saddr limit rate over 6/minute } drop
+{% endif %}
+    tcp dport {{ linux_hardening_ssh_port }} accept
+{% if linux_hardening_firewall_allowed_tcp_ports | length > 0 %}
+    tcp dport { {{ linux_hardening_firewall_allowed_tcp_ports | join(', ') }} } accept
+{% endif %}
+{% if linux_hardening_firewall_allowed_udp_ports | length > 0 %}
+    udp dport { {{ linux_hardening_firewall_allowed_udp_ports | join(', ') }} } accept
+{% endif %}
+
+    limit rate 5/minute log prefix "nft-drop: " level info
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}

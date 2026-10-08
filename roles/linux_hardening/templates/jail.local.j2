@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+[DEFAULT]
+bantime  = {{ linux_hardening_fail2ban_bantime }}
+findtime = {{ linux_hardening_fail2ban_findtime }}
+maxretry = {{ linux_hardening_fail2ban_maxretry }}
+backend  = systemd
+ignoreip = 127.0.0.1/8 ::1{% for ip in linux_hardening_fail2ban_ignoreip %} {{ ip }}{% endfor %}
+
+banaction = {{ 'ufw' if linux_hardening_firewall_backend == 'ufw' else 'nftables-multiport' }}
+banaction_allports = {{ 'ufw' if linux_hardening_firewall_backend == 'ufw' else 'nftables-allports' }}
+
+[sshd]
+enabled = true
+port    = {{ linux_hardening_ssh_port }}
+mode    = aggressive

@@ -1,0 +1,29 @@
+---
+- name: Validate sshd configuration
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  listen: Restart ssh
+
+- name: Restart ssh service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+  when: not linux_hardening_in_container | bool
+  listen: Restart ssh
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+  when: not linux_hardening_in_container | bool
+
+- name: Reload nftables
+  ansible.builtin.service:
+    name: nftables
+    state: reloaded
+  when: not linux_hardening_in_container | bool
+
+- name: Load audit rules
+  ansible.builtin.command: /usr/sbin/augenrules --load
+  changed_when: true
+  when: not linux_hardening_in_container | bool

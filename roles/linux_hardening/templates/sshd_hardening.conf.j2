@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+# SSH hardening drop-in (linux_hardening role). sshd uses the FIRST value it
+# reads for each keyword, so this file is named to be included first.
+
+Port {{ linux_hardening_ssh_port }}
+PermitRootLogin {{ linux_hardening_ssh_permit_root_login }}
+PasswordAuthentication {{ 'yes' if linux_hardening_ssh_password_authentication | bool else 'no' }}
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+PermitEmptyPasswords no
+AuthenticationMethods {{ 'any' if linux_hardening_ssh_password_authentication | bool else 'publickey' }}
+MaxAuthTries {{ linux_hardening_ssh_max_auth_tries }}
+MaxSessions 4
+LoginGraceTime 30
+ClientAliveInterval {{ linux_hardening_ssh_client_alive_interval }}
+ClientAliveCountMax {{ linux_hardening_ssh_client_alive_count_max }}
+X11Forwarding {{ linux_hardening_ssh_x11_forwarding }}
+AllowTcpForwarding {{ linux_hardening_ssh_allow_tcp_forwarding }}
+AllowAgentForwarding no
+PermitTunnel no
+PermitUserEnvironment no
+LogLevel VERBOSE
+{% if linux_hardening_ssh_allow_groups | length > 0 %}
+AllowGroups {{ linux_hardening_ssh_allow_groups | join(' ') }}
+{% endif %}
+
+KexAlgorithms {{ linux_hardening_ssh_kex_algorithms | join(',') }}
+Ciphers {{ linux_hardening_ssh_ciphers | join(',') }}
+MACs {{ linux_hardening_ssh_macs | join(',') }}

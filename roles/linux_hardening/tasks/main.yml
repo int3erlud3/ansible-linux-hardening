@@ -1,0 +1,42 @@
+---
+- name: Assert supported platform
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'Debian'
+    fail_msg: "This role supports Debian and Ubuntu only (found {{ ansible_facts['distribution'] }})."
+    quiet: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: SSH hardening
+  ansible.builtin.import_tasks: ssh.yml
+  when: linux_hardening_ssh_enabled | bool
+  tags: [hardening, ssh]
+
+- name: Firewall
+  ansible.builtin.import_tasks: firewall.yml
+  when: linux_hardening_firewall_enabled | bool
+  tags: [hardening, firewall]
+
+- name: Fail2ban brute-force protection
+  ansible.builtin.import_tasks: fail2ban.yml
+  when: linux_hardening_fail2ban_enabled | bool
+  tags: [hardening, fail2ban]
+
+- name: Unattended upgrades
+  ansible.builtin.import_tasks: unattended_upgrades.yml
+  when: linux_hardening_unattended_upgrades_enabled | bool
+  tags: [hardening, updates]
+
+- name: Kernel parameters (sysctl)
+  ansible.builtin.import_tasks: sysctl.yml
+  when: linux_hardening_sysctl_enabled | bool
+  tags: [hardening, sysctl]
+
+- name: Audit daemon
+  ansible.builtin.import_tasks: auditd.yml
+  when: linux_hardening_auditd_enabled | bool
+  tags: [hardening, auditd]

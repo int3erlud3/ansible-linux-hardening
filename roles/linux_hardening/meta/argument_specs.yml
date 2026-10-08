@@ -1,0 +1,50 @@
+---
+argument_specs:
+  main:
+    short_description: Baseline hardening for Debian/Ubuntu servers
+    options:
+      linux_hardening_ssh_port:
+        type: int
+        default: 22
+        description: TCP port sshd listens on (always allowed in the firewall).
+      linux_hardening_ssh_permit_root_login:
+        type: str
+        choices: ["no", "prohibit-password"]
+        default: "no"
+        description: Value for PermitRootLogin.
+      linux_hardening_ssh_password_authentication:
+        type: bool
+        default: false
+        description: Allow password logins.
+      linux_hardening_ssh_allow_groups:
+        type: list
+        elements: str
+        default: []
+        description: Restrict SSH logins to these groups (empty = no restriction).
+      linux_hardening_firewall_backend:
+        type: str
+        choices: [ufw, nftables]
+        default: ufw
+        description: Firewall implementation.
+      linux_hardening_firewall_allowed_tcp_ports:
+        type: list
+        elements: int
+        default: []
+        description: Additional inbound TCP ports.
+      linux_hardening_firewall_allowed_udp_ports:
+        type: list
+        elements: int
+        default: []
+        description: Additional inbound UDP ports.
+      linux_hardening_unattended_upgrades_reboot:
+        type: bool
+        default: false
+        description: Reboot automatically when an update requires it.
+      linux_hardening_sysctl_extra:
+        type: dict
+        default: {}
+        description: Extra/overriding sysctl settings.
+      linux_hardening_auditd_immutable:
+        type: bool
+        default: false
+        description: Lock audit rules until reboot (-e 2).

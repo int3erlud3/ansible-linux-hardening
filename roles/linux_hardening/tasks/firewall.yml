@@ -1,0 +1,66 @@
+---
+- name: Install firewall packages
+  ansible.builtin.apt:
+    name: "{{ ['ufw'] if linux_hardening_firewall_backend == 'ufw' else ['nftables'] }}"
+    state: present
+
+# ---- ufw -------------------------------------------------------------------
+- name: Configure ufw
+  when: linux_hardening_firewall_backend == 'ufw'
+  block:
+    - name: Allow SSH before enabling the firewall (avoid lock-out)
+      community.general.ufw:
+        rule: "{{ 'limit' if linux_hardening_firewall_ssh_rate_limit | bool else 'allow' }}"
+        port: "{{ linux_hardening_ssh_port | string }}"
+        proto: tcp
+        comment: ssh
+
+    - name: Allow additional TCP ports
+      community.general.ufw:
+        rule: allow
+        port: "{{ item | string }}"
+        proto: tcp
+      loop: "{{ linux_hardening_firewall_allowed_tcp_ports }}"
+
+    - name: Allow additional UDP ports
+      community.general.ufw:
+        rule: allow
+        port: "{{ item | string }}"
+        proto: udp
+      loop: "{{ linux_hardening_firewall_allowed_udp_ports }}"
+
+    - name: Set default policies (deny incoming, allow outgoing)
+      community.general.ufw:
+        direction: "{{ item.direction }}"
+        default: "{{ item.policy }}"
+      loop:
+        - { direction: incoming, policy: deny }
+        - { direction: outgoing, policy: allow }
+        - { direction: routed, policy: deny }
+
+    - name: Enable ufw
+      community.general.ufw:
+        state: enabled
+        logging: "low"
+      when: not linux_hardening_in_container | bool
+
+# ---- nftables --------------------------------------------------------------
+- name: Configure nftables
+  when: linux_hardening_firewall_backend == 'nftables'
+  block:
+    - name: Deploy nftables ruleset
+      ansible.builtin.template:
+        src: nftables.conf.j2
+        dest: /etc/nftables.conf
+        owner: root
+        group: root
+        mode: "0600"
+        validate: "{{ omit if linux_hardening_in_container | bool else '/usr/sbin/nft -c -f %s' }}"
+      notify: Reload nftables
+
+    - name: Enable nftables service
+      ansible.builtin.service:
+        name: nftables
+        enabled: true
+        state: started
+      when: not linux_hardening_in_container | bool

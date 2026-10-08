@@ -1,0 +1,9 @@
+inventory/hosts.yml
+*.retry
+.ansible/
+.venv/
+__pycache__/
+.cache/
+.vscode/
+.idea/
+.DS_Store

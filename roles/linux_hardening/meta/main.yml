@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: linux_hardening
+  namespace: alii
+  author: Alii
+  description: Baseline hardening for Debian/Ubuntu servers (SSH, firewall, fail2ban, updates, sysctl, auditd)
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm, trixie]
+    - name: Ubuntu
+      versions: [jammy, noble]
+  galaxy_tags: [security, hardening, ssh, firewall, fail2ban, auditd]
+dependencies: []
