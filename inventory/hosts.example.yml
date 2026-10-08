@@ -1,0 +1,19 @@
+---
+# Copy to inventory/hosts.yml (git-ignored) and adjust.
+all:
+  children:
+    webservers:
+      hosts:
+        web01.example.internal:
+          ansible_host: 192.0.2.10
+      vars:
+        linux_hardening_firewall_allowed_tcp_ports: [80, 443]
+    dbservers:
+      hosts:
+        db01.example.internal:
+          ansible_host: 192.0.2.20
+      vars:
+        linux_hardening_firewall_backend: nftables
+  vars:
+    ansible_user: admin
+    linux_hardening_ssh_allow_groups: [sudo, ssh-users]
